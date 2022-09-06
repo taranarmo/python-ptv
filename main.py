@@ -9,22 +9,27 @@ import os
 from threading import Thread
 from queue import Queue, Empty
 
-VIDEO_FILE = ""
+VIDEO_FILE = "/home/volkov/Downloads/output_short.MOV"
 TEMP_DIRECTORY = "/tmp/opencv_subtract_bg"
 THREAD_COUNT = 8
+DENOISE = True
 
 if not os.path.exists(TEMP_DIRECTORY):
     os.mkdir(TEMP_DIRECTORY)
 
-def subtract_backgroung(video_file, subtractor=cv2.createBackgroundSubtractorMOG2):
+def subtract_backgroung(video_file, subtractor=cv2.createBackgroundSubtractorMOG2, denoise=DENOISE):
     cap = cv2.VideoCapture(video_file)
     fgbg = subtractor()
+    if denoise:
+        process_image = lambda x: fgbg.apply(cv2.fastNlMeansDenoisingColored(x, h=10))
+    else:
+        process_image = lambda x: fgbg.apply(x)
     i = 0
     while True:
         ret, frame = cap.read()
         if not ret:
             break
-        fgmask = fgbg.apply(frame)
+        fgmask = process_image(frame)
         filename = os.path.join(TEMP_DIRECTORY, f"frame{i}.png")
         cv2.imwrite(filename, fgmask)
         i += 1
@@ -61,6 +66,7 @@ def track(frames=TEMP_DIRECTORY):
                 frame = queue.get(timeout=5)
                 print(f"processing frame {frame.frame_no}")
                 tp.locate(frame, 55, minmass=20)
+                queue.task_done()
             except Empty:
                 break
 
