@@ -16,15 +16,18 @@ parser.add_argument('video_file')
 parser.add_argument('--denoise', help='apply denoise filter to the frames', action='store_true')
 parser.add_argument('--threads', type=int, help='threads to use', default=os.cpu_count())
 parser.add_argument('--temp_directory', type=pathlib.Path, help='directory to store temporary frames', default='/tmp/opencv_subtract_bg')
+parser.add_argument('--save_directory', type=pathlib.Path, help='directory to save result files', default=os.curdir)
 args = parser.parse_args()
 
 VIDEO_FILE = args.video_file
 TEMP_DIRECTORY = args.temp_directory
+SAVE_DIRECTORY = args.save_directory
 THREAD_COUNT = args.threads
 DENOISE = args.denoise
 
-if not os.path.exists(TEMP_DIRECTORY):
-    os.mkdir(TEMP_DIRECTORY)
+for directory in (TEMP_DIRECTORY, SAVE_DIRECTORY):
+    if not os.path.exists(directory):
+        os.mkdir(directory)
 
 def subtract_backgroung(video_file, subtractor=cv2.createBackgroundSubtractorMOG2, denoise=DENOISE):
     cap = cv2.VideoCapture(video_file)
@@ -75,7 +78,9 @@ def track(frames=TEMP_DIRECTORY):
                 frame = queue.get(timeout=5)
                 print(f'processing frame {frame.frame_no}')
                 particles = tp.locate(frame, 55, minmass=20)
-                particles.reset_index().to_feather(f'particles_frame_{frame.frame_no}.feather')
+                particles.reset_index().to_feather(
+                        os.path.join(SAVE_DIRECTORY, f'particles_frame_{frame.frame_no}.feather')
+                        )
                 queue.task_done()
             except Empty:
                 break
