@@ -36,6 +36,13 @@ parser.add_argument(
         help='directory to save result files',
         default=os.curdir
         )
+parser.add_argument(
+        '--denoise_parameter',
+        type=int,
+        help='parameter h passed to fastNlMeansDenoisingColored of openCV',
+        default=2,
+        dest='denoise_parameter',
+        )
 args = parser.parse_args()
 
 VIDEO_FILE = args.video_file
@@ -43,6 +50,7 @@ TEMP_DIRECTORY = args.temp_directory
 SAVE_DIRECTORY = args.save_directory
 THREAD_COUNT = args.threads
 DENOISE = args.denoise
+DENOISE_PARAMETER = args.denoise_parameter
 
 for directory in (TEMP_DIRECTORY, SAVE_DIRECTORY):
     if not os.path.exists(directory):
@@ -51,13 +59,14 @@ for directory in (TEMP_DIRECTORY, SAVE_DIRECTORY):
 def subtract_backgroung(
         video_file,
         subtractor=cv2.createBackgroundSubtractorMOG2,
-        denoise=DENOISE
+        denoise=DENOISE,
+        h=DENOISE_PARAMETER,
         ):
     cap = cv2.VideoCapture(video_file)
     fgbg = subtractor()
     if denoise:
         process_image = lambda x: fgbg.apply(
-                cv2.fastNlMeansDenoisingColored(x, h=10)
+                cv2.fastNlMeansDenoisingColored(x, h=h)
                 )
     else:
         process_image = lambda x: fgbg.apply(x)
