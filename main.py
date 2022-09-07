@@ -13,10 +13,29 @@ from queue import Queue, Empty
 
 parser = argparse.ArgumentParser('Track particles on video')
 parser.add_argument('video_file')
-parser.add_argument('--denoise', help='apply denoise filter to the frames', action='store_true')
-parser.add_argument('--threads', type=int, help='threads to use', default=os.cpu_count())
-parser.add_argument('--temp_directory', type=pathlib.Path, help='directory to store temporary frames', default='/tmp/opencv_subtract_bg')
-parser.add_argument('--save_directory', type=pathlib.Path, help='directory to save result files', default=os.curdir)
+parser.add_argument(
+        '--denoise',
+        help='apply denoise filter to the frames',
+        action='store_true'
+        )
+parser.add_argument(
+        '--threads',
+        type=int,
+        help='threads to use',
+        default=os.cpu_count()
+        )
+parser.add_argument(
+        '--temp_directory',
+        type=pathlib.Path,
+        help='directory to store temporary frames',
+        default='/tmp/opencv_subtract_bg'
+        )
+parser.add_argument(
+        '--save_directory',
+        type=pathlib.Path,
+        help='directory to save result files',
+        default=os.curdir
+        )
 args = parser.parse_args()
 
 VIDEO_FILE = args.video_file
@@ -29,11 +48,17 @@ for directory in (TEMP_DIRECTORY, SAVE_DIRECTORY):
     if not os.path.exists(directory):
         os.mkdir(directory)
 
-def subtract_backgroung(video_file, subtractor=cv2.createBackgroundSubtractorMOG2, denoise=DENOISE):
+def subtract_backgroung(
+        video_file,
+        subtractor=cv2.createBackgroundSubtractorMOG2,
+        denoise=DENOISE
+        ):
     cap = cv2.VideoCapture(video_file)
     fgbg = subtractor()
     if denoise:
-        process_image = lambda x: fgbg.apply(cv2.fastNlMeansDenoisingColored(x, h=10))
+        process_image = lambda x: fgbg.apply(
+                cv2.fastNlMeansDenoisingColored(x, h=10)
+                )
     else:
         process_image = lambda x: fgbg.apply(x)
     i = 0
@@ -79,7 +104,10 @@ def track(frames=TEMP_DIRECTORY):
                 print(f'processing frame {frame.frame_no}')
                 particles = tp.locate(frame, 55, minmass=20)
                 particles.reset_index().to_feather(
-                        os.path.join(SAVE_DIRECTORY, f'particles_frame_{frame.frame_no}.feather')
+                        os.path.join(
+                            SAVE_DIRECTORY,
+                            f'particles_frame_{frame.frame_no}.feather'
+                            )
                         )
                 queue.task_done()
             except Empty:
