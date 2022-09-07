@@ -74,7 +74,8 @@ def track(frames=TEMP_DIRECTORY):
             try:
                 frame = queue.get(timeout=5)
                 print(f"processing frame {frame.frame_no}")
-                tp.locate(frame, 55, minmass=20)
+                particles = tp.locate(frame, 55, minmass=20)
+                particles.reset_index().to_feather(f"particles_frame_{frame.frame_no}.feather")
                 queue.task_done()
             except Empty:
                 break
