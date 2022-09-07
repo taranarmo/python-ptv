@@ -39,7 +39,7 @@ def subtract_backgroung(video_file, subtractor=cv2.createBackgroundSubtractorMOG
         if not ret:
             break
         fgmask = process_image(frame)
-        filename = os.path.join(TEMP_DIRECTORY, f"frame{i}.png")
+        filename = os.path.join(TEMP_DIRECTORY, f'frame{i}.png')
         cv2.imwrite(filename, fgmask)
         i += 1
     cap.release()
@@ -51,7 +51,7 @@ def subtract_backgroung(video_file, subtractor=cv2.createBackgroundSubtractorMOG
 #     return image[:, :, 1]  # Take just the green channel
 def track(frames=TEMP_DIRECTORY):
     if os.path.isdir(frames):
-        frames = os.path.join(frames, "*.png")
+        frames = os.path.join(frames, '*.png')
     frames = pims.open(frames)
     queue = Queue()
 
@@ -61,7 +61,7 @@ def track(frames=TEMP_DIRECTORY):
                 time.sleep(1)
             else:
                 queue.put(frame)
-        print("frames are done")
+        print('frames are done')
 
     producer_thread = Thread(
             target=populate_queue,
@@ -73,9 +73,9 @@ def track(frames=TEMP_DIRECTORY):
         while True:
             try:
                 frame = queue.get(timeout=5)
-                print(f"processing frame {frame.frame_no}")
+                print(f'processing frame {frame.frame_no}')
                 particles = tp.locate(frame, 55, minmass=20)
-                particles.reset_index().to_feather(f"particles_frame_{frame.frame_no}.feather")
+                particles.reset_index().to_feather(f'particles_frame_{frame.frame_no}.feather')
                 queue.task_done()
             except Empty:
                 break
@@ -96,6 +96,6 @@ def main():
     subtract_backgroung(VIDEO_FILE)
     track(TEMP_DIRECTORY)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
 # tp.motion.compute_drift(tp.link(f, 30))
