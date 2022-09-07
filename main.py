@@ -6,13 +6,22 @@ import pims
 import cv2
 import time
 import os
+import argparse
+import pathlib
 from threading import Thread
 from queue import Queue, Empty
 
-VIDEO_FILE = "/home/volkov/Downloads/output_short.MOV"
-TEMP_DIRECTORY = "/tmp/opencv_subtract_bg"
-THREAD_COUNT = 8
-DENOISE = True
+parser = argparse.ArgumentParser('Track particles on video')
+parser.add_argument('video_file')
+parser.add_argument('--denoise', help='apply denoise filter to the frames', action='store_true')
+parser.add_argument('--threads', type=int, help='threads to use', default=os.cpu_count())
+parser.add_argument('--temp_directory', type=pathlib.Path, help='directory to store temporary frames', default='/tmp/opencv_subtract_bg')
+args = parser.parse_args()
+
+VIDEO_FILE = args.video_file
+TEMP_DIRECTORY = args.temp_directory
+THREAD_COUNT = args.threads
+DENOISE = args.denoise
 
 if not os.path.exists(TEMP_DIRECTORY):
     os.mkdir(TEMP_DIRECTORY)
